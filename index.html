@@ -544,17 +544,63 @@
             <div class="culture-grid" id="cultureScores"></div>
         </div>
 
-        <div class="button-group">
-            <button class="btn btn-success" id="exportBtn" onclick="exportToCSV()">
-                📊 Xuất kết quả ra CSV
-            </button>
             <button class="btn btn-primary" id="completeBtn" onclick="completeSurvey()">
                 ✅ Hoàn thành khảo sát
             </button>
+
         </div>
 
         <div id="alertMessage"></div>
     </div>
+
+        <script>
+        // Thay thế URL này bằng URL Web App của bạn
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxIYUvubgn4UbjOIXRKQwfLdxOgdkOmgUX_BO5HoKJkuiflADP-qYlEYKy_3Laj377uA/exec';
+        
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const submitBtn = form.querySelector('.submit-btn');
+            const loading = document.getElementById('loading');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            // Hiển thị loading
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            statusMessage.style.display = 'none';
+            
+            // Gửi dữ liệu
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                statusMessage.style.display = 'block';
+                
+                if (data.status === 'success') {
+                    statusMessage.className = 'status-message success';
+                    statusMessage.textContent = data.message;
+                    form.reset(); // Reset form
+                } else {
+                    statusMessage.className = 'status-message error';
+                    statusMessage.textContent = 'Có lỗi xảy ra: ' + data.message;
+                }
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                statusMessage.style.display = 'block';
+                statusMessage.className = 'status-message error';
+                statusMessage.textContent = 'Lỗi kết nối: ' + error.message;
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+            });
+        });
+    </script>
 
     <script>
         const surveyData = [
