@@ -387,6 +387,30 @@
                 min-width: auto;
             }
         }
+
+        .introduction-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    border-left: 5px solid #28a745;
+}
+
+.introduction-section h3 {
+    color: #155724;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+}
+
+.introduction-section ul {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.introduction-section li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
     </style>
 </head>
 <body>
@@ -395,7 +419,17 @@
             <h1>KHẢO SÁT VĂN HÓA TỔ CHỨC</h1>
             <p>Organizational Culture Assessment Instrument (OCAI)</p>
         </div>
-
+<div class="introduction-section">
+    <h3>📋 Giới thiệu về khảo sát OCAI</h3>
+    <p>Công cụ Đánh giá Văn hóa Tổ chức (OCAI) được phát triển bởi Kim Cameron và Robert Quinn, giúp đánh giá và phân loại văn hóa tổ chức theo 4 loại chính:</p>
+    <ul>
+        <li><strong>Clan (Gia đình):</strong> Môi trường thân thiện, hợp tác như một gia đình lớn</li>
+        <li><strong>Adhocracy (Đổi mới):</strong> Môi trường năng động, sáng tạo và linh hoạt</li>
+        <li><strong>Market (Thị trường):</strong> Môi trường cạnh tranh, tập trung vào kết quả</li>
+        <li><strong>Hierarchy (Phân cấp):</strong> Môi trường có cấu trúc, quy trình rõ ràng</li>
+    </ul>
+    <p>Khảo sát này sẽ giúp bạn hiểu rõ văn hóa hiện tại và mong muốn của tổ chức mình.</p>
+</div>
         <div class="info-section">
             <h3>Thông tin người tham gia</h3>
             <div class="info-grid">
@@ -574,28 +608,47 @@
             updateButtons();
         }
 
-        function updateTotals() {
-            surveyData.forEach(section => {
-                let currentTotal = 0;
-                let desiredTotal = 0;
-                
-                section.questions.forEach(question => {
-                    const currentKey = `${section.id}-${question.code}-current`;
-                    const desiredKey = `${section.id}-${question.code}-desired`;
-                    currentTotal += responses[currentKey] || 0;
-                    desiredTotal += responses[desiredKey] || 0;
-                });
+function updateTotals() {
+    surveyData.forEach(section => {
+        let currentTotal = 0;
+        let desiredTotal = 0;
 
-                const currentTotalElement = document.getElementById(`${section.id}-total-current`);
-                const desiredTotalElement = document.getElementById(`${section.id}-total-desired`);
-                
-                currentTotalElement.textContent = currentTotal;
-                desiredTotalElement.textContent = desiredTotal;
-                
-                currentTotalElement.className = currentTotal === 100 ? 'total-valid' : 'total-invalid';
-                desiredTotalElement.className = desiredTotal === 100 ? 'total-valid' : 'total-invalid';
-            });
+        section.questions.forEach(question => {
+            const currentKey = `${section.id}-${question.code}-current`;
+            const desiredKey = `${section.id}-${question.code}-desired`;
+            currentTotal += responses[currentKey] || 0;
+            desiredTotal += responses[desiredKey] || 0;
+        });
+
+        const currentTotalElement = document.getElementById(`${section.id}-total-current`);
+        const desiredTotalElement = document.getElementById(`${section.id}-total-desired`);
+
+        currentTotalElement.textContent = currentTotal;
+        desiredTotalElement.textContent = desiredTotal;
+
+        currentTotalElement.className = currentTotal === 100 ? 'total-valid' : 'total-invalid';
+        desiredTotalElement.className = desiredTotal === 100 ? 'total-valid' : 'total-invalid';
+
+        // 🆕 Hiển thị cảnh báo nếu > 100
+        let alertId = `${section.id}-alert`;
+        let alertElement = document.getElementById(alertId);
+        if (!alertElement) {
+            alertElement = document.createElement('div');
+            alertElement.id = alertId;
+            alertElement.style.marginTop = '10px';
+            alertElement.style.fontWeight = 'bold';
+            alertElement.style.color = '#dc3545'; // màu đỏ
+            currentTotalElement.parentElement.parentElement.appendChild(alertElement);
         }
+
+        if (currentTotal > 100 || desiredTotal > 100) {
+            alertElement.textContent = '⚠️ Tổng điểm vượt quá 100. Vui lòng kiểm tra lại.';
+        } else {
+            alertElement.textContent = '';
+        }
+    });
+}
+
 
         function updateCultureScores() {
             const cultureTypes = ['A', 'B', 'C', 'D'];
