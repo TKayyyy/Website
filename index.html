@@ -305,6 +305,8 @@
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            display: flex;
+            justify-content: center;
         }
 
         .btn-primary:hover {
@@ -544,8 +546,8 @@
             <div class="culture-grid" id="cultureScores"></div>
         </div>
 
-            <button class="btn btn-primary" id="completeBtn" onclick="completeSurvey()">
-                           ✅ Hoàn thành khảo sát
+            <button class="btn btn-success" id="completeBtn" onclick="completeSurvey()">
+                📤 Gửi khảo sát & Hoàn tất
             </button>
 
         </div>
@@ -926,47 +928,59 @@ function updateTotals() {
             alert("Kết quả khảo sát đã được xuất ra file CSV!");
         }
 
-        function completeSurvey() {
-            const participantInfo = {
-                name: document.getElementById('participantName').value,
-                department: document.getElementById('participantDepartment').value,
-                position: document.getElementById('participantPosition').value,
-                date: document.getElementById('surveyDate').value
-            };
+       function completeSurvey() {
+    const participantInfo = {
+        name: document.getElementById('participantName').value,
+        department: document.getElementById('participantDepartment').value,
+        position: document.getElementById('participantPosition').value,
+        date: document.getElementById('surveyDate').value
+    };
 
-            let resultText = `Khảo sát OCAI hoàn thành!\n\n`;
-            resultText += `Người tham gia: ${participantInfo.name}\n`;
-            resultText += `Phòng ban: ${participantInfo.department}\n`;
-            resultText += `Chức vụ: ${participantInfo.position}\n`;
-            resultText += `Ngày khảo sát: ${participantInfo.date}\n\n`;
-            
-            resultText += `Kết quả theo loại văn hóa:\n`;
-            
-            const cultureTypes = ['A', 'B', 'C', 'D'];
-            const cultureNames = ['Clan (Gia đình)', 'Adhocracy (Đổi mới)', 'Market (Thị trường)', 'Hierarchy (Phân cấp)'];
-            
-            cultureTypes.forEach((type, index) => {
-                let currentTotal = 0;
-                let desiredTotal = 0;
-                
-                surveyData.forEach(section => {
-                    const question = section.questions.find(q => q.code.endsWith(type));
-                    if (question) {
-                        const currentKey = `${section.id}-${question.code}-current`;
-                        const desiredKey = `${section.id}-${question.code}-desired`;
-                        currentTotal += responses[currentKey] || 0;
-                        desiredTotal += responses[desiredKey] || 0;
-                    }
-                });
-                
-                const currentAvg = Math.round(currentTotal / surveyData.length * 10) / 10;
-                const desiredAvg = Math.round(desiredTotal / surveyData.length * 10) / 10;
-                
-                resultText += `${cultureNames[index]}: Hiện tại ${currentAvg} - Mong muốn ${desiredAvg}\n`;
-            });
-            
-            alert(resultText);
-        }
+    const cultureTypes = ['A', 'B', 'C', 'D'];
+    let cultureScores = {};
+
+    cultureTypes.forEach(type => {
+        let currentTotal = 0;
+        let desiredTotal = 0;
+
+        surveyData.forEach(section => {
+            const question = section.questions.find(q => q.code.endsWith(type));
+            if (question) {
+                const currentKey = `${section.id}-${question.code}-current`;
+                const desiredKey = `${section.id}-${question.code}-desired`;
+                currentTotal += responses[currentKey] || 0;
+                desiredTotal += responses[desiredKey] || 0;
+            }
+        });
+
+        cultureScores[`Current_${type}`] = Math.round(currentTotal / surveyData.length * 10) / 10;
+        cultureScores[`Desired_${type}`] = Math.round(desiredTotal / surveyData.length * 10) / 10;
+    });
+
+    const formData = new FormData();
+    formData.append('Name', participantInfo.name);
+    formData.append('Department', participantInfo.department);
+    formData.append('Position', participantInfo.position);
+    formData.append('Date', participantInfo.date);
+
+    // Gửi từng điểm văn hóa
+    for (let key in cultureScores) {
+        formData.append(key, cultureScores[key]);
+    }
+
+    fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.text())
+    .then(data => {
+        alert("✅ Khảo sát đã được gửi thành công!");
+    })
+    .catch(error => {
+        alert("❌ Lỗi khi gửi khảo sát: " + error.message);
+    });
+}
+
 
         // Khởi tạo khảo sát khi trang được load
         document.addEventListener('DOMContentLoaded', function() {
