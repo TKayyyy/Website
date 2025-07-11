@@ -540,8 +540,12 @@
         </div>
     </div>
 
+<div id="globalAlert" class="alert alert-warning" style="display: none; margin-bottom: 20px;">
+</div>
+
 </div>
         <div class="info-section">
+
             <h3>Thông tin người tham gia</h3>
             <div class="info-grid">
                 <div class="info-item">
@@ -722,6 +726,10 @@
         function updateResponse(sectionId, questionCode, type, value) {
             const key = `${sectionId}-${questionCode}-${type}`;
             responses[key] = parseInt(value) || 0;
+            
+            // Kiểm tra ngay lập tức khi nhập
+            checkInstantTotal(sectionId);
+            
             updateTotals();
             updateCultureScores();
             updateButtons();
@@ -953,6 +961,54 @@ function completeSurvey() {
         surveyData.forEach(otherSection => {
             if (otherSection.id !== sectionId) {
                 // Kiểm tra section khác...
+            }
+        });
+        
+        if (!hasOtherIssues) {
+            globalAlert.style.display = 'none';
+        }
+    }
+}
+
+
+function checkInstantTotal(sectionId) {
+    const section = surveyData.find(s => s.id === sectionId);
+    let currentTotal = 0;
+    let desiredTotal = 0;
+    
+    section.questions.forEach(question => {
+        const currentInput = document.getElementById(`${sectionId}-${question.code}-current`);
+        const desiredInput = document.getElementById(`${sectionId}-${question.code}-desired`);
+        
+        currentTotal += parseInt(currentInput.value) || 0;
+        desiredTotal += parseInt(desiredInput.value) || 0;
+    });
+    
+    // Hiển thị thông báo ngay lập tức
+    const globalAlert = document.getElementById('globalAlert');
+    if (currentTotal > 100 || desiredTotal > 100) {
+        globalAlert.style.display = 'block';
+        globalAlert.innerHTML = `⚠️ Phần ${section.title}: Tổng điểm ${currentTotal > 100 ? 'Hiện tại' : 'Mong muốn'} = ${currentTotal > 100 ? currentTotal : desiredTotal} (vượt quá 100). Vui lòng điều chỉnh lại.`;
+    } else {
+        // Kiểm tra các section khác có vấn đề không
+        let hasOtherIssues = false;
+        surveyData.forEach(otherSection => {
+            if (otherSection.id !== sectionId) {
+                let otherCurrentTotal = 0;
+                let otherDesiredTotal = 0;
+                
+                otherSection.questions.forEach(question => {
+                    const currentKey = `${otherSection.id}-${question.code}-current`;
+                    const desiredKey = `${otherSection.id}-${question.code}-desired`;
+                    otherCurrentTotal += responses[currentKey] || 0;
+                    otherDesiredTotal += responses[desiredKey] || 0;
+                });
+                
+                if (otherCurrentTotal > 100 || otherDesiredTotal > 100) {
+                    hasOtherIssues = true;
+                    globalAlert.style.display = 'block';
+                    globalAlert.innerHTML = `⚠️ Phần ${otherSection.title}: Tổng điểm ${otherCurrentTotal > 100 ? 'Hiện tại' : 'Mong muốn'} = ${otherCurrentTotal > 100 ? otherCurrentTotal : otherDesiredTotal} (vượt quá 100). Vui lòng điều chỉnh lại.`;
+                }
             }
         });
         
