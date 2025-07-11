@@ -353,6 +353,18 @@
             border-left-color: #28a745;
         }
 
+        .alert-over-100 {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+            font-weight: normal;
+            }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -726,9 +738,13 @@ function updateTotals() {
         }
 
         if (currentTotal > 100 || desiredTotal > 100) {
-            alertElement.textContent = '⚠️ Tổng điểm vượt quá 100. Vui lòng kiểm tra lại.';
+            alertElement.innerHTML = `
+                <div class="alert-over-100">
+                    ⚠️ Tổng điểm vượt quá 100. Vui lòng kiểm tra lại.
+                </div>
+            `;
         } else {
-            alertElement.textContent = '';
+            alertElement.innerHTML = '';
         }
     });
 }
