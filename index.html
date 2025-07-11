@@ -557,7 +557,7 @@
 
         <script>
         // Thay thế URL này bằng URL Web App của bạn
-      //  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9FHFHCe0eGvCkeyPuoNR_HcXcVdB2TTXhVOddIJUAWJYTFieXEj3bbcWpVMwTl2vvRA/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxIYUvubgn4UbjOIXRKQwfLdxOgdkOmgUX_BO5HoKJkuiflADP-qYlEYKy_3Laj377uA/exec';
         
        
     </script>
@@ -886,16 +886,7 @@ function updateTotals() {
             alert("Kết quả khảo sát đã được xuất ra file CSV!");
         }
 
-// Thay thế SCRIPT_URL bằng URL mới của bạn
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9rywLeWVH0LczPOjuQeMPamylIn9NwFRrc4LCyZe-cEeHz_vWSgumrXjrrjeF7YkU8g/exec';
-
-function completeSurvey() {
-    // Hiển thị loading
-    const completeBtn = document.getElementById('completeBtn');
-    const originalText = completeBtn.innerHTML;
-    completeBtn.innerHTML = '⏳ Đang gửi...';
-    completeBtn.disabled = true;
-
+       function completeSurvey() {
     const participantInfo = {
         name: document.getElementById('participantName').value,
         department: document.getElementById('participantDepartment').value,
@@ -924,7 +915,6 @@ function completeSurvey() {
         cultureScores[`Desired_${type}`] = Math.round(desiredTotal / surveyData.length * 10) / 10;
     });
 
-    // Tạo dữ liệu để gửi
     const formData = new FormData();
     formData.append('Name', participantInfo.name);
     formData.append('Department', participantInfo.department);
@@ -936,36 +926,24 @@ function completeSurvey() {
         formData.append(key, cultureScores[key]);
     }
 
-    // Gửi dữ liệu với method POST
     fetch(SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors', // Thêm dòng này
         body: formData
     })
-    .then(() => {
-        // Với no-cors, không thể đọc response
-        console.log('Data sent successfully');
+    .then(res => res.text())
+    .then(data => {
         alert("✅ Khảo sát đã được gửi thành công!");
-        
-        // Reset form (tùy chọn)
-        document.querySelectorAll('input').forEach(input => {
-            if (input.type !== 'date') input.value = '';
-        });
-        responses = {};
-        updateTotals();
-        updateCultureScores();
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert("❌ Lỗi khi gửi khảo sát. Vui lòng thử lại!");
-    })
-    .finally(() => {
-        // Khôi phục button
-        completeBtn.innerHTML = originalText;
-        completeBtn.disabled = false;
-        updateButtons();
+        alert("❌ Lỗi khi gửi khảo sát: " + error.message);
     });
 }
+
+
+        // Khởi tạo khảo sát khi trang được load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSurvey();
+        });
     </script>
 </body>
 </html>
