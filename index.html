@@ -557,7 +557,7 @@
 
         <script>
         // Thay thế URL này bằng URL Web App của bạn
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9FHFHCe0eGvCkeyPuoNR_HcXcVdB2TTXhVOddIJUAWJYTFieXEj3bbcWpVMwTl2vvRA/exec';
+      //  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9FHFHCe0eGvCkeyPuoNR_HcXcVdB2TTXhVOddIJUAWJYTFieXEj3bbcWpVMwTl2vvRA/exec';
         
        
     </script>
@@ -886,6 +886,9 @@ function updateTotals() {
             alert("Kết quả khảo sát đã được xuất ra file CSV!");
         }
 
+// Thay thế SCRIPT_URL bằng URL mới của bạn
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9rywLeWVH0LczPOjuQeMPamylIn9NwFRrc4LCyZe-cEeHz_vWSgumrXjrrjeF7YkU8g/exec';
+
 function completeSurvey() {
     // Hiển thị loading
     const completeBtn = document.getElementById('completeBtn');
@@ -921,54 +924,48 @@ function completeSurvey() {
         cultureScores[`Desired_${type}`] = Math.round(desiredTotal / surveyData.length * 10) / 10;
     });
 
-    // Tạo URLSearchParams thay vì FormData
-    const params = new URLSearchParams();
-    params.append('Name', participantInfo.name);
-    params.append('Department', participantInfo.department);
-    params.append('Position', participantInfo.position);
-    params.append('Date', participantInfo.date);
+    // Tạo dữ liệu để gửi
+    const formData = new FormData();
+    formData.append('Name', participantInfo.name);
+    formData.append('Department', participantInfo.department);
+    formData.append('Position', participantInfo.position);
+    formData.append('Date', participantInfo.date);
 
     // Gửi từng điểm văn hóa
     for (let key in cultureScores) {
-        params.append(key, cultureScores[key]);
+        formData.append(key, cultureScores[key]);
     }
 
+    // Gửi dữ liệu với method POST
     fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params.toString()
+        mode: 'no-cors', // Thêm dòng này
+        body: formData
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.text();
-    })
-    .then(data => {
-        console.log('Success:', data);
+    .then(() => {
+        // Với no-cors, không thể đọc response
+        console.log('Data sent successfully');
         alert("✅ Khảo sát đã được gửi thành công!");
         
         // Reset form (tùy chọn)
-        // document.querySelectorAll('input').forEach(input => input.value = '');
-        // responses = {};
+        document.querySelectorAll('input').forEach(input => {
+            if (input.type !== 'date') input.value = '';
+        });
+        responses = {};
+        updateTotals();
+        updateCultureScores();
     })
     .catch(error => {
         console.error('Error:', error);
-        alert("❌ Lỗi khi gửi khảo sát: " + error.message);
+        alert("❌ Lỗi khi gửi khảo sát. Vui lòng thử lại!");
     })
     .finally(() => {
         // Khôi phục button
         completeBtn.innerHTML = originalText;
         completeBtn.disabled = false;
-        updateButtons(); // Cập nhật lại trạng thái button
+        updateButtons();
     });
 }
-        // Khởi tạo khảo sát khi trang được load
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeSurvey();
-        });
     </script>
 </body>
 </html>
