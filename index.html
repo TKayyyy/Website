@@ -760,13 +760,7 @@ function updateTotals() {
             currentTotalElement.parentElement.parentElement.appendChild(alertElement);
         }
 
-        if (currentTotal > 100 || desiredTotal > 100) {
-            alertElement.innerHTML = `
-                <div class="alert-over-100">
-                    ⚠️ Tổng điểm vượt quá 100. Vui lòng kiểm tra lại.
-                </div>
-            `;
-        } else {
+        if (currentTotal > 100 || desiredTotal > 100)  {
             alertElement.innerHTML = '';
         }
     });
