@@ -557,7 +557,7 @@
 
         <script>
         // Thay thế URL này bằng URL Web App của bạn
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxIYUvubgn4UbjOIXRKQwfLdxOgdkOmgUX_BO5HoKJkuiflADP-qYlEYKy_3Laj377uA/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZK2pPTpva1Z3LU8h_gFMBRIgPSOjwfxSnl1_6nUjN4ZYcKeFzbeu90rL3aXjWe-U67w/exec';
         
        
     </script>
@@ -772,35 +772,35 @@ function updateTotals() {
             });
         }
 
-        function updateButtons() {
-            const isValid = surveyData.every(section => {
-                let currentTotal = 0;
-                let desiredTotal = 0;
-                
-                section.questions.forEach(question => {
-                    const currentKey = `${section.id}-${question.code}-current`;
-                    const desiredKey = `${section.id}-${question.code}-desired`;
-                    currentTotal += responses[currentKey] || 0;
-                    desiredTotal += responses[desiredKey] || 0;
-                });
-                
-                return currentTotal === 100 && desiredTotal === 100;
-            });
+function updateButtons() {
+    const isValid = surveyData.every(section => {
+        let currentTotal = 0;
+        let desiredTotal = 0;
+        
+        section.questions.forEach(question => {
+            const currentKey = `${section.id}-${question.code}-current`;
+            const desiredKey = `${section.id}-${question.code}-desired`;
+            currentTotal += responses[currentKey] || 0;
+            desiredTotal += responses[desiredKey] || 0;
+        });
+        
+        return currentTotal === 100 && desiredTotal === 100;
+    });
 
-            const name = document.getElementById('participantName').value;
-            const canExport = isValid && name.trim() !== '';
-            
-            const exportBtn = document.getElementById('exportBtn');
-            const completeBtn = document.getElementById('completeBtn');
-            
-            exportBtn.disabled = !canExport;
-            exportBtn.className = canExport ? 'btn btn-success' : 'btn btn-disabled';
-            
-            completeBtn.disabled = !isValid;
-            completeBtn.className = isValid ? 'btn btn-primary' : 'btn btn-disabled';
-            
-            showAlert(isValid);
-        }
+    const name = document.getElementById('participantName').value;
+    const canComplete = isValid && name.trim() !== '';
+    
+    // XÓA PHẦN NÀY
+    // const exportBtn = document.getElementById('exportBtn');
+    // exportBtn.disabled = !canExport;
+    // exportBtn.className = canExport ? 'btn btn-success' : 'btn btn-disabled';
+    
+    const completeBtn = document.getElementById('completeBtn');
+    completeBtn.disabled = !canComplete;
+    completeBtn.className = canComplete ? 'btn btn-primary' : 'btn btn-disabled';
+    
+    showAlert(isValid);
+}
 
         function showAlert(isValid) {
             const alertDiv = document.getElementById('alertMessage');
@@ -820,73 +820,12 @@ function updateTotals() {
             }
         }
 
-        function exportToCSV() {
-            const participantInfo = {
-                name: document.getElementById('participantName').value,
-                department: document.getElementById('participantDepartment').value,
-                position: document.getElementById('participantPosition').value,
-                date: document.getElementById('surveyDate').value
-            };
-
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "OCAI Survey Results\n";
-            csvContent += `Participant,${participantInfo.name}\n`;
-            csvContent += `Department,${participantInfo.department}\n`;
-            csvContent += `Position,${participantInfo.position}\n`;
-            csvContent += `Date,${participantInfo.date}\n\n`;
-            
-            csvContent += "Section,Question Code,Question,Current Score,Desired Score\n";
-            
-            surveyData.forEach(section => {
-                section.questions.forEach(question => {
-                    const currentKey = `${section.id}-${question.code}-current`;
-                    const desiredKey = `${section.id}-${question.code}-desired`;
-                    const currentScore = responses[currentKey] || 0;
-                    const desiredScore = responses[desiredKey] || 0;
-                    
-                    csvContent += `${section.title},${question.code},"${question.text}",${currentScore},${desiredScore}\n`;
-                });
-            });
-            
-            // Thêm tổng kết văn hóa
-            csvContent += "\nCulture Summary\n";
-            csvContent += "Culture Type,Current Average,Desired Average\n";
-            
-            const cultureTypes = ['A', 'B', 'C', 'D'];
-            const cultureNames = ['Clan (Gia đình)', 'Adhocracy (Đổi mới)', 'Market (Thị trường)', 'Hierarchy (Phân cấp)'];
-            
-            cultureTypes.forEach((type, index) => {
-                let currentTotal = 0;
-                let desiredTotal = 0;
-                
-                surveyData.forEach(section => {
-                    const question = section.questions.find(q => q.code.endsWith(type));
-                    if (question) {
-                        const currentKey = `${section.id}-${question.code}-current`;
-                        const desiredKey = `${section.id}-${question.code}-desired`;
-                        currentTotal += responses[currentKey] || 0;
-                        desiredTotal += responses[desiredKey] || 0;
-                    }
-                });
-                
-                const currentAvg = Math.round(currentTotal / surveyData.length * 10) / 10;
-                const desiredAvg = Math.round(desiredTotal / surveyData.length * 10) / 10;
-                
-                csvContent += `${cultureNames[index]},${currentAvg},${desiredAvg}\n`;
-            });
-            
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `OCAI_Survey_${participantInfo.name}_${participantInfo.date}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            alert("Kết quả khảo sát đã được xuất ra file CSV!");
-        }
-
-       function completeSurvey() {
+function completeSurvey() {
+    // Thêm loading indicator
+    const completeBtn = document.getElementById('completeBtn');
+    completeBtn.innerHTML = '⏳ Đang gửi...';
+    completeBtn.disabled = true;
+    
     const participantInfo = {
         name: document.getElementById('participantName').value,
         department: document.getElementById('participantDepartment').value,
@@ -915,13 +854,18 @@ function updateTotals() {
         cultureScores[`Desired_${type}`] = Math.round(desiredTotal / surveyData.length * 10) / 10;
     });
 
+    // Debug: Log dữ liệu trước khi gửi
+    console.log('Sending data:', {
+        participantInfo,
+        cultureScores
+    });
+
     const formData = new FormData();
     formData.append('Name', participantInfo.name);
     formData.append('Department', participantInfo.department);
     formData.append('Position', participantInfo.position);
     formData.append('Date', participantInfo.date);
 
-    // Gửi từng điểm văn hóa
     for (let key in cultureScores) {
         formData.append(key, cultureScores[key]);
     }
@@ -930,15 +874,22 @@ function updateTotals() {
         method: 'POST',
         body: formData
     })
-    .then(res => res.text())
+    .then(res => {
+        console.log('Response status:', res.status);
+        return res.text();
+    })
     .then(data => {
+        console.log('Response data:', data);
         alert("✅ Khảo sát đã được gửi thành công!");
+        completeBtn.innerHTML = '📤 Đã gửi thành công';
     })
     .catch(error => {
+        console.error('Error:', error);
         alert("❌ Lỗi khi gửi khảo sát: " + error.message);
+        completeBtn.innerHTML = '📤 Gửi khảo sát & Hoàn tất';
+        completeBtn.disabled = false;
     });
 }
-
 
         // Khởi tạo khảo sát khi trang được load
         document.addEventListener('DOMContentLoaded', function() {
