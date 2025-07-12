@@ -498,6 +498,48 @@
         opacity: 1;
     }
 }
+
+/* Toast notification styles */
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    min-width: 300px;
+    max-width: 400px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    animation: slideInFromRight 0.5s ease-out;
+    cursor: pointer;
+}
+
+.toast-warning {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    border-left: 4px solid #ff3838;
+}
+
+.toast-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
     </style>
 </head>
 <body>
@@ -937,39 +979,38 @@ function completeSurvey() {
             initializeSurvey();
         });
 
-        function checkInstantTotal(sectionId) {
-    const section = surveyData.find(s => s.id === sectionId);
-    let currentTotal = 0;
-    let desiredTotal = 0;
+//         function checkInstantTotal(sectionId) {
+//     const section = surveyData.find(s => s.id === sectionId);
+//     let currentTotal = 0;
+//     let desiredTotal = 0;
     
-    section.questions.forEach(question => {
-        const currentInput = document.getElementById(`${sectionId}-${question.code}-current`);
-        const desiredInput = document.getElementById(`${sectionId}-${question.code}-desired`);
+//     section.questions.forEach(question => {
+//         const currentInput = document.getElementById(`${sectionId}-${question.code}-current`);
+//         const desiredInput = document.getElementById(`${sectionId}-${question.code}-desired`);
         
-        currentTotal += parseInt(currentInput.value) || 0;
-        desiredTotal += parseInt(desiredInput.value) || 0;
-    });
+//         currentTotal += parseInt(currentInput.value) || 0;
+//         desiredTotal += parseInt(desiredInput.value) || 0;
+//     });
     
-    // Hiển thị thông báo ngay lập tức
-    const globalAlert = document.getElementById('globalAlert');
-    if (currentTotal > 100 || desiredTotal > 100) {
-        globalAlert.style.display = 'block';
-        globalAlert.innerHTML = '⚠️ Tổng điểm vượt quá 100. Vui lòng kiểm tra lại.';
-    } else {
-        // Kiểm tra các section khác có vấn đề không
-        let hasOtherIssues = false;
-        surveyData.forEach(otherSection => {
-            if (otherSection.id !== sectionId) {
-                // Kiểm tra section khác...
-            }
-        });
+//     // Hiển thị thông báo ngay lập tức
+//     const globalAlert = document.getElementById('globalAlert');
+//     if (currentTotal > 100 || desiredTotal > 100) {
+//         globalAlert.style.display = 'block';
+//         globalAlert.innerHTML = '⚠️ Tổng điểm vượt quá 100. Vui lòng kiểm tra lại.';
+//     } else {
+//         // Kiểm tra các section khác có vấn đề không
+//         let hasOtherIssues = false;
+//         surveyData.forEach(otherSection => {
+//             if (otherSection.id !== sectionId) {
+//                 // Kiểm tra section khác...
+//             }
+//         });
         
-        if (!hasOtherIssues) {
-            globalAlert.style.display = 'none';
-        }
-    }
-}
-
+//         if (!hasOtherIssues) {
+//             globalAlert.style.display = 'none';
+//         }
+//     }
+// }
 
 function checkInstantTotal(sectionId) {
     const section = surveyData.find(s => s.id === sectionId);
@@ -984,11 +1025,11 @@ function checkInstantTotal(sectionId) {
         desiredTotal += parseInt(desiredInput.value) || 0;
     });
     
-    // Hiển thị thông báo ngay lập tức
-    const globalAlert = document.getElementById('globalAlert');
+    // Hiển thị toast notification
     if (currentTotal > 100 || desiredTotal > 100) {
-        globalAlert.style.display = 'block';
-        globalAlert.innerHTML = `⚠️ Phần ${section.title}: Tổng điểm ${currentTotal > 100 ? 'Hiện tại' : 'Mong muốn'} = ${currentTotal > 100 ? currentTotal : desiredTotal} (vượt quá 100). Vui lòng điều chỉnh lại.`;
+        const overType = currentTotal > 100 ? 'Hiện tại' : 'Mong muốn';
+        const overValue = currentTotal > 100 ? currentTotal : desiredTotal;
+        showToast(`⚠️ ${section.title}: Tổng điểm ${overType} = ${overValue} (vượt quá 100). Vui lòng điều chỉnh lại.`, 'warning');
     } else {
         // Kiểm tra các section khác có vấn đề không
         let hasOtherIssues = false;
@@ -1006,15 +1047,48 @@ function checkInstantTotal(sectionId) {
                 
                 if (otherCurrentTotal > 100 || otherDesiredTotal > 100) {
                     hasOtherIssues = true;
-                    globalAlert.style.display = 'block';
-                    globalAlert.innerHTML = `⚠️ Phần ${otherSection.title}: Tổng điểm ${otherCurrentTotal > 100 ? 'Hiện tại' : 'Mong muốn'} = ${otherCurrentTotal > 100 ? otherCurrentTotal : otherDesiredTotal} (vượt quá 100). Vui lòng điều chỉnh lại.`;
+                    const overType = otherCurrentTotal > 100 ? 'Hiện tại' : 'Mong muốn';
+                    const overValue = otherCurrentTotal > 100 ? otherCurrentTotal : otherDesiredTotal;
+                    showToast(`⚠️ ${otherSection.title}: Tổng điểm ${overType} = ${overValue} (vượt quá 100). Vui lòng điều chỉnh lại.`, 'warning');
                 }
             }
         });
         
         if (!hasOtherIssues) {
-            globalAlert.style.display = 'none';
+            hideToast();
         }
+    }
+}
+
+// Thêm vào cuối phần JavaScript
+function showToast(message, type = 'warning') {
+    // Xóa toast cũ nếu có
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+        <span class="toast-close" onclick="this.parentElement.remove()">×</span>
+        <div>${message}</div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Tự động ẩn sau 5 giây
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+function hideToast() {
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
     }
 }
     </script>
